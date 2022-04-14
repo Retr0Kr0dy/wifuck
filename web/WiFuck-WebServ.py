@@ -11,8 +11,6 @@ import shutil
 from datetime import datetime
 from http.server import HTTPServer, BaseHTTPRequestHandler
 
-global to_send_as_html
-
 class handler(BaseHTTPRequestHandler):
   def do_GET(self):
     print (self.path)
@@ -63,6 +61,7 @@ def check_for_essid(essid, lst):
 subprocess.run(["airmon-ng", "start", hacknic])
 
 def scan():
+  global to_send_as_html
   discover_access_points = subprocess.Popen(["sudo", "airodump-ng","-w" ,"file","--write-interval", "1","--output-format", "csv", hacknic], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
   time.sleep(10)
   subprocess.call("clear", shell=True)
@@ -85,8 +84,7 @@ def scan():
     to_send_list.append(f"{index}\t{item['BSSID']}\t\t{item['ESSID']}")
     for item in to_send_list:
       to_send_as_html = []
-      to_send_as_html = to_send_as_html.append('<td>'+item+'</td>\n')
-      to_send_as_html = ''.join([str(item) for item in to_send_as_html])
+      to_send_as_html = to_send_as_html.append(item+'\n')
     return to_send_as_html
 
 def Dos(target_id):
