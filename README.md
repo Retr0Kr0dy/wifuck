@@ -19,8 +19,8 @@ WiFuck is a simplifier for wifi bullshitting, such as deauth, mitm, etc...
 Commands options ;
         <no args>                                   - WiFuck normal usage, start an AP scanner and then deauth all clients.
         scan <net-adapter>                          - Scan for AP.
-        deauth <AP-mac-addr> <client-mac-addr>      - Deauth with specific mac addrs, (AP and client mac can be replace by <X>
-                                                      for broadcast (ff:ff:ff:ff:ff)).
+        deauth <AP-mac-addr> <client-mac-addr>      - Deauth with specific mac addrs, (AP and client mac can be replace by X
+                                                      for broadcast (ff:ff:ff:ff:ff:ff)).
 ```
 
 ## WiFuck vs WiFuck-rpi vs Web-WiFuck
