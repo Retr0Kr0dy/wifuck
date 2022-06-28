@@ -11,7 +11,7 @@ usage = '''
      <scan> or <s> or <-s>        Scan AP, you must specify network adapter  |   wifuck scan <network-adapter>
      <deauth> or <d> or <-d>      Sending deauth package using scapy         |   wifuck deauth -a <network-adapter> -c <client> -g <gateway>
                                   if <client> or <gateway> is equal to X,    |     
-                                  it's broadcast ff:ff:ff:ff:ff              |   wifuck deauth -a <network-adapter> -c X -g X
+                                  it's broadcast ff:ff:ff:ff:ff:ff           |   wifuck deauth -a <network-adapter> -c X -g X
 '''
 
 W = '\033[0m'
@@ -208,7 +208,11 @@ else:
                 try:
                     adapter = (sys.argv[sys.argv.index('-a')+1])
                     client = (sys.argv[sys.argv.index('-c')+1])
+                    if client == 'X':
+                        client = 'ff:ff:ff:ff:ff:ff'
                     gateway = (sys.argv[sys.argv.index('-g')+1])
+                    if gateway == 'X':
+                        gateway = 'ff:ff:ff:ff:ff:ff'
                     init(adapter)
                     print(scp_deauth(adapter,client,gateway))
                 except:
