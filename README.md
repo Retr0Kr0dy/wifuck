@@ -20,10 +20,11 @@ WiFuck is a simplifier for wifi bullshitting, such as deauth, mitm, etc...
 > `<no args>`
 
 WiFuck normal usage, start an AP scanner and then deauth all clients. <br>
-> `scan <net-adapter>`                        
+
+> `--scan|-s --adapter|a <net-adapter>`                        
 
 Scan for AP. <br>
-> `deauth <AP-mac-addr> <client-mac-addr>`    
+> `--deauth|-s --gateway|-g <AP-mac-addr> --client|-c <client-mac-addr>`    
 
 Deauth with specific mac addrs, (AP and client mac can be replace by X <br>
 for broadcast (ff:ff:ff:ff:ff:ff)). <br>
